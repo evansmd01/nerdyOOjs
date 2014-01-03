@@ -2,21 +2,20 @@ window.onload = function() {
 
     function createBaseClass() {
         return nerdyOO.declare({
-            testMethod: function(i) {
-                console.log(i);
+            testMethod: function() {
             }
         });
     }
 
     function extendClass(Base) {
         return nerdyOO.inherit([Base], {
-            testMethod: function(i) {
-                this.base.testMethod(i);
+            testMethod: function() {
+                this.base.testMethod();
             }
         });
     }
 
     var BaseClass = createBaseClass();
     var NewClass = extendClass(BaseClass);
-    new NewClass().testMethod(i);    
+    new NewClass().testMethod();    
 }
