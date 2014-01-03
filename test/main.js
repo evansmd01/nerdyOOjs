@@ -1,10 +1,10 @@
 
-require(["jso"], function(jsObjects) {
+require(["nerdyOO"], function(nerdyOO) {
 
     /************************************
     *              BASE
     ************************************/
-    var LoggerBase = jsObjects.declare({
+    var LoggerBase = nerdyOO.declare({
         construct: function(color) {
             this.color = color;
             this.console = document.getElementById('Console');
@@ -22,7 +22,7 @@ require(["jso"], function(jsObjects) {
     /************************************
     *        Single Inheritance
     ************************************/
-    var ClassA = jsObjects.declare({
+    var ClassA = nerdyOO.inherit([LoggerBase], {
         construct: function(color) {
             this.base.construct(color);
             this.log("In ClassA.construct");
@@ -31,14 +31,14 @@ require(["jso"], function(jsObjects) {
         method1: function() {
             this.log("In ClassA.method1");
         }
-    }, [LoggerBase]);
+    });
     new ClassA('blue').method1();
 
     /************************************
     *  Multiple Levels of Inheritance
     ************************************/
 
-    var ClassB = jsObjects.declare({
+    var ClassB = nerdyOO.inherit([ClassA], {
         construct: function(color) {
             this.base.construct(color);
             this.log("In ClassB.construct");
@@ -47,19 +47,19 @@ require(["jso"], function(jsObjects) {
         method1: function() {
             this.log("In ClassB.method1");
         }
-    }, [ClassA]);
+    });
     new ClassB('red').method1();
 
 
     /************************************
     *         Deadly Diamond of Death
     ************************************/
-    var ClassC = jsObjects.declare({
+    var ClassC = nerdyOO.inherit([ClassA, ClassB], {
         construct: function(color) {
             this.base.construct(color); //calls both parents contruct methods
             this.log("In ClassC.construct");
         }
-    }, [ClassA, ClassB]);
+    });
     var c = new ClassC("green");
     c.method1(); //only calls ClassB's method1. Last one in to the inhertance array wins
     c.base.method1(); //calls both parents' method1. 
