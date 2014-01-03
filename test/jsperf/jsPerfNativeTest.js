@@ -1,32 +1,31 @@
-function createBaseClass() {
-    var DeclaredClass = function() {
+window.onload = function() {
 
-    };
+    function createBaseClass() {
+        var DeclaredClass = function() {
 
-    DeclaredClass.prototype.testMethod = function(i) {
-        console.log(i);
-    };
+        };
 
-    return DeclaredClass;
-}
+        DeclaredClass.prototype.testMethod = function(i) {
+            console.log(i);
+        };
 
-function extendClass(Base) {
-    var DeclaredClass = function() {
+        return DeclaredClass;
+    }
 
-    };
+    function extendClass(Base) {
+        var DeclaredClass = function() {
 
-    DeclaredClass.prototype = new Base();
-    DeclaredClass.prototype.constructor = DeclaredClass;
+        };
 
-    DeclaredClass.prototype.testMethod = function(i) {
-        Base.prototype.testMethod.call(this, i);
-    };
-}
+        DeclaredClass.prototype = new Base();
+        DeclaredClass.prototype.constructor = DeclaredClass;
 
+        DeclaredClass.prototype.testMethod = function(i) {
+            Base.prototype.testMethod.call(this, i);
+        };
+    }
 
-var BaseClass = createBaseClass();
-
-for (var i = 0; i < 10000; i++) {
+    var BaseClass = createBaseClass();
     var NewClass = extendClass(BaseClass);
-    new NewClass().testMethod(i);
+    new NewClass().testMethod(i);    
 }
