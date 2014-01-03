@@ -166,6 +166,4 @@ if (typeof define === 'function' && define.amd) {
     define(function () {        
         return nerdyOO;
     });
-} else {
-    throw new Error('This library is defined in an AMD module. Use RequireJS or similar to load this library');
 }
