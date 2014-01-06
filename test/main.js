@@ -17,6 +17,9 @@ require(["nerdyOO"], function(nerdyOO) {
             p.innerHTML = message;
             this.console.appendChild(p);
         }
+    },
+    {
+        THE_FIELD: "some static text"
     });
 
     /************************************

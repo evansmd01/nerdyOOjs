@@ -12,20 +12,22 @@ var nerdyOO = {
      * Creates a prototype class using the declaration object literal
      *
      * @param {Object} declarationObjectLiteral An object defining properties and methods to apply to the prototype
+     * @param {Object} staticPropertiesObjectLiteral An object defining static properties and methods to apply to the class function
      * @returns {Function} the new class
      */
-    declare: function (declarationObjectLiteral) {
-        return nerdyOO.inherit(null, declarationObjectLiteral);
+    declare: function (declarationObjectLiteral, staticPropertiesObjectLiteral) {
+        return nerdyOO.inherit(null, declarationObjectLiteral, staticPropertiesObjectLiteral);
     },
 
     /**
      * Creates a prototype class using the declaration object literal and an array of classes to inherit from
      *
      * @param {Array} arrayBaseClasses An array containing base classes from which to inherit
-     * @param {Object} declarationObjectLiteral An object defining properties and methods to apply to the prototype             
+     * @param {Object} declarationObjectLiteral An object defining properties and methods to apply to the prototype     
+     * @param {Object} staticPropertiesObjectLiteral An object defining static properties and methods to apply to the class function
      * @returns {Function} the new class
      */
-    inherit: function (arrayBaseClasses, declarationObjectLiteral) {
+    inherit: function (arrayBaseClasses, declarationObjectLiteral, staticPropertiesObjectLiteral) {
 
         //optionally allow them to pass in just a single base class, not packaged in an array
         if (typeof (arrayBaseClasses) === "function") {
@@ -42,13 +44,24 @@ var nerdyOO = {
             }
         };
 
+        //apply static members first (potentially overriden later)
+        nerdyOO._internal.mapStaticMembers(DeclaredClass, arrayBaseClasses, staticPropertiesObjectLiteral);
+
         //apply base class prototype members to the prototype first. In case of conflicts, last in wins
-        if (arrayBaseClasses instanceof Array && arrayBaseClasses.length > 0) {
-            nerdyOO._internal.mapBasePrototypes(DeclaredClass.prototype, arrayBaseClasses);
-        }
+        nerdyOO._internal.mapBasePrototypes(DeclaredClass.prototype, arrayBaseClasses);        
 
         //now apply the declaration object literal's members to the prototype, overriding any matching members from the base classes, 
-        nerdyOO._internal.mapDeclaration(DeclaredClass.prototype, declarationObjectLiteral);
+        nerdyOO._internal.mapDeclaration(DeclaredClass.prototype, declarationObjectLiteral, staticPropertiesObjectLiteral);
+
+        
+
+        //map static members
+        for (var staticMember in staticPropertiesObjectLiteral) {
+            if (!staticPropertiesObjectLiteral.hasOwnProperty(staticMember)) {
+                continue;
+            }
+            DeclaredClass[staticMember] = staticPropertiesObjectLiteral[staticMember];
+        }
 
 
         /**
@@ -93,6 +106,9 @@ var nerdyOO = {
          * @returns {undefined}
          */
         mapBasePrototypes: function (proto, arrayBaseClasses) {
+            if(!(arrayBaseClasses instanceof Array && arrayBaseClasses.length > 0)){
+                return;
+            }
             proto.basePrototypes = [];
             //loop through base classes applying members to the instance. 
             //multiple inheritance is possible, and ugly, last in wins. 
@@ -147,13 +163,44 @@ var nerdyOO = {
          * @param {Object} declarationObjectLiteral An object defining properties and methods to apply to the prototype
          * @returns {undefined}
          */
-        mapDeclaration: function (proto, declarationObjectLiteral) {
+        mapDeclaration: function (proto, declarationObjectLiteral, staticPropertiesObjectLiteral) {
             for (var declarationMember in declarationObjectLiteral) {
                 if (!declarationObjectLiteral.hasOwnProperty(declarationMember)) {
                     continue;
                 }
                 //add the member to this instance, overriding any previously added member of the same name
                 proto[declarationMember] = declarationObjectLiteral[declarationMember];
+            }            
+        },
+
+        /**
+         * Maps the static members from the base and the supplied object literal 
+         *
+         * @param {Function} classFunction The new class function
+         * @param {Array} arrayBaseClasses An array containing base classes from which to inherit
+         * @param {Object} staticPropertiesObjectLiteral An object defining static properties and methods to apply to the class function
+         * @returns {undefined}
+         */
+        mapStaticMembers: function (classFunction, arrayBaseClasses, staticPropertiesObjectLiteral) {
+            if (arrayBaseClasses instanceof Array && arrayBaseClasses.length > 0) {
+                for (var i = 0; i < arrayBaseClasses.length; i++){
+                    var Base = arrayBaseClasses[i];
+                    for(var member in Base){
+                        if(!Base.hasOwnProperty(member)){
+                            continue;
+                        }
+                        classFunction[member] = Base[member];
+                    }
+                }
+            }
+
+            if(staticPropertiesObjectLiteral){
+                for(var member in staticPropertiesObjectLiteral){
+                    if(!staticPropertiesObjectLiteral.hasOwnProperty(member)){
+                        continue;
+                    }
+                    classFunction[member] = staticPropertiesObjectLiteral[member];
+                }
             }
         }
     }
