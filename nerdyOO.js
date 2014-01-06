@@ -73,6 +73,7 @@ var nerdyOO = {
         * @returns {boolean}
         */
         DeclaredClass.prototype._invokeOnBase = function (strMethod, args) {
+            var returnValues = [];
             this._invokeOnBasePrototypeContext[strMethod] = this._invokeOnBasePrototypeContext[strMethod] || [];
             if (this._invokeOnBasePrototypeContext[strMethod].length === 0) {
                 this._invokeOnBasePrototypeContext[strMethod].push(DeclaredClass.prototype);
@@ -82,10 +83,15 @@ var nerdyOO = {
                 var baseProto = prototypeContext.basePrototypes[i];
                 if (baseProto.hasOwnProperty(strMethod)) {
                     this._invokeOnBasePrototypeContext[strMethod].push(baseProto);
-                    baseProto[strMethod].apply(this, args);
+                    returnValues.push(baseProto[strMethod].apply(this, args));                    
                 }
             }
             this._invokeOnBasePrototypeContext[strMethod] = [];
+            
+            if (returnValues.length === 1){
+                return returnValues[0];
+            }
+            return returnValues;
         };
         DeclaredClass.prototype._invokeOnBasePrototypeContext = {};
 
@@ -149,7 +155,7 @@ var nerdyOO = {
                     if (typeof (baseProto[member]) === 'function') {
                         context.base[member] = function (functionName) {
                             return function () {
-                                context._invokeOnBase(functionName, arguments);
+                                return context._invokeOnBase(functionName, arguments);
                             };
                         }(member);
                     }
